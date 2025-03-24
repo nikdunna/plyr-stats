@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model game_sets {
+  id             Int            @id @default(autoincrement())
+  game_id        Int?
+  set_number     Int
+  team_score     Int
+  opponent_score Int
+  set_id         String         @unique @db.Uuid
+  games          games?         @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  player_stats   player_stats[]
+}
+
+model games {
+  id                                  Int          @id @default(autoincrement())
+  tournament_id                       Int?
+  team_id                             Int?
+  opponent_team_id                    Int?
+  game_date                           DateTime     @db.Timestamp(6)
+  location                            String?      @db.VarChar(255)
+  created_at                          DateTime?    @default(now()) @db.Timestamp(6)
+  game_sets                           game_sets[]
+  teams_games_opponent_team_idToteams teams?       @relation("games_opponent_team_idToteams", fields: [opponent_team_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  teams_games_team_idToteams          teams?       @relation("games_team_idToteams", fields: [team_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  tournaments                         tournaments? @relation(fields: [tournament_id], references: [id], onUpdate: NoAction)
+}
+
+model notifications {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  message    String
+  is_read    Boolean?  @default(false)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model parent_players {
+  parent_id                             Int
+  player_id                             Int
+  users_parent_players_parent_idTousers users @relation("parent_players_parent_idTousers", fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_parent_players_player_idTousers users @relation("parent_players_player_idTousers", fields: [player_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([parent_id, player_id])
+}
+
+model player_stats {
+  id              Int        @id @default(autoincrement())
+  player_id       Int?       @unique
+  hit_attempts    Int?       @default(0)
+  kills           Int?       @default(0)
+  assists         Int?       @default(0)
+  assist_attempts Int?       @default(0)
+  three_pass      Int?       @default(0)
+  two_pass        Int?       @default(0)
+  one_pass        Int?       @default(0)
+  zero_pass       Int?       @default(0)
+  digs            Int?       @default(0)
+  shanked_digs    Int?       @default(0)
+  serves          Int?       @default(0)
+  aces            Int?       @default(0)
+  kill_blocks     Int?       @default(0)
+  block_touches   Int?       @default(0)
+  service_errors  Int?       @default(0)
+  hitting_errors  Int?       @default(0)
+  blocking_errors Int?       @default(0)
+  created_at      DateTime?  @default(now()) @db.Timestamp(6)
+  set_id          String?    @db.Uuid
+  users           users?     @relation(fields: [player_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  game_sets       game_sets? @relation(fields: [set_id], references: [set_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model team_players {
+  team_id   Int
+  player_id Int
+  users     users @relation(fields: [player_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  teams     teams @relation(fields: [team_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([team_id, player_id])
+}
+
+model teams {
+  id                                  Int                @id @default(autoincrement())
+  name                                String             @db.VarChar(100)
+  coach_id                            Int?
+  created_at                          DateTime?          @default(now()) @db.Timestamp(6)
+  games_games_opponent_team_idToteams games[]            @relation("games_opponent_team_idToteams")
+  games_games_team_idToteams          games[]            @relation("games_team_idToteams")
+  team_players                        team_players[]
+  users                               users?             @relation(fields: [coach_id], references: [id], onUpdate: NoAction)
+  tournament_teams                    tournament_teams[]
+}
+
+model tournament_teams {
+  tournament_id Int
+  team_id       Int
+  teams         teams       @relation(fields: [team_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  tournaments   tournaments @relation(fields: [tournament_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([tournament_id, team_id])
+}
+
+model tournaments {
+  id               Int                @id @default(autoincrement())
+  name             String             @db.VarChar(255)
+  location         String?            @db.VarChar(255)
+  start_date       DateTime           @db.Date
+  end_date         DateTime           @db.Date
+  created_at       DateTime?          @default(now()) @db.Timestamp(6)
+  games            games[]
+  tournament_teams tournament_teams[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model users {
+  id                                             Int              @id @default(autoincrement())
+  full_name                                      String           @db.VarChar(100)
+  email                                          String           @unique @db.VarChar(255)
+  password_hash                                  String
+  role                                           String           @db.VarChar(20)
+  created_at                                     DateTime?        @default(now()) @db.Timestamp(6)
+  notifications                                  notifications[]
+  parent_players_parent_players_parent_idTousers parent_players[] @relation("parent_players_parent_idTousers")
+  parent_players_parent_players_player_idTousers parent_players[] @relation("parent_players_player_idTousers")
+  player_stats                                   player_stats?
+  team_players                                   team_players[]
+  teams                                          teams[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model userstemp {
+  id         BigInt    @id @default(autoincrement())
+  username   String
+  email      String    @unique
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+}
