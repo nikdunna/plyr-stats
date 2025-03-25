@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -15,6 +16,8 @@ import {
 } from '@/components/ui/select';
 
 export default function SignupPage() {
+
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     username: '',
@@ -41,6 +44,7 @@ export default function SignupPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Signup attempt with:', formData);
+    router.push('/login');
     // In a real app, you would handle user registration here
 
   };
