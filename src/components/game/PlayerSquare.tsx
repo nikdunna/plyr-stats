@@ -8,6 +8,7 @@ interface PlayerSquareProps {
   player: Player;
   onAction: (action: GameAction) => void;
   onPlayerSwap: (newPlayer: Player) => void;
+  currentSet: number;
 }
 
 const actionButtons = [
@@ -21,12 +22,13 @@ const actionButtons = [
   { label: 'Error', type: 'error' as const, color: 'bg-gray-500 hover:bg-gray-600' },
 ];
 
-export default function PlayerSquare({ player, onAction, onPlayerSwap }: PlayerSquareProps) {
+export default function PlayerSquare({ player, onAction, onPlayerSwap, currentSet }: PlayerSquareProps) {
   const handleAction = (actionType: GameAction['type']) => {
     const action: GameAction = {
       type: actionType,
       timestamp: new Date(),
       playerId: player.id,
+      setNumber: currentSet,
     };
     console.log(`Action logged for ${player.name}:`, action);
     onAction(action);

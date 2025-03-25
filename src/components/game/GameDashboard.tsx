@@ -392,6 +392,7 @@ export default function GameDashboard() {
               player={player}
               onAction={handleAction}
               onPlayerSwap={(newPlayer) => handlePlayerSwap(index, newPlayer)}
+              currentSet={game.currentSet}
             />
           ))}
         </div>
