@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 // import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -21,6 +23,7 @@ export default function LoginPage() {
       [name]: value
     }));
   };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

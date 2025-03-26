@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -15,6 +16,8 @@ import {
 } from '@/components/ui/select';
 
 export default function SignupPage() {
+
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     fullName: '',
@@ -38,7 +41,7 @@ export default function SignupPage() {
     }));
   };
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
 
@@ -57,8 +60,10 @@ export default function SignupPage() {
     } else {
       // Handle success
       console.log(data.message)
+      router.push('/login');
     }
   }
+
 
 
   return (
