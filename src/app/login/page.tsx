@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-// import { useRouter } from 'next/router';
+import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
@@ -28,41 +28,20 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData),
+    const res = await signIn('credentials', {
+      redirect: false,
+      email: formData.email,  
+      password: formData.password,
     })
 
-    const data = await res.json()
-    if (!res.ok) {
-      // Handle error
-      console.error(data.error)
+    if (res?.error) {
+      console.error('Failed to sign in', res.error)
     } else {
-      // Handle success
-      console.log(data.message)
-      // NEED TO STORE/REDIRECT SESSION INFO
-      /*
-      switch (data.user.role) {
-        case 'COACH':
-          router.push('/dashboard/coach')
-          break
-        case 'PLAYER':
-          router.push('/dashboard/player')
-          break
-        case 'PARENT':
-          router.push('/dashboard/parent')
-          break
-        case 'ADMIN':
-          router.push('/dashboard/admin')
-          break
-        default:
-          router.push('/dashboard')
-      }
-          */
-      router.push('/dashboard')
+      // ✅ Session is now active, redirect based on role
+      console.log('Sign in successful')
+      router.push('/dashboard') // or dynamic role-based route
     }
-  };
+    };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-gray-900 p-4">
