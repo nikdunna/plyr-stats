@@ -29,7 +29,8 @@ export default function LoginPage() {
     e.preventDefault()
 
     const res = await signIn('credentials', {
-      redirect: false,
+      redirect: true,
+      callbackUrl: '/dashboard',
       email: formData.email,  
       password: formData.password,
     })
@@ -39,7 +40,7 @@ export default function LoginPage() {
     } else {
       // ✅ Session is now active, redirect based on role
       console.log('Sign in successful')
-      router.push('/dashboard') // or dynamic role-based route
+     // router.push('/dashboard') // or dynamic role-based route
     }
     };
 
