@@ -108,7 +108,7 @@ export default function SignupPage() {
 
               <div className="space-y-2">
                 <label htmlFor="fullName" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Email
+                  Full Name
                 </label>
                 <Input
                   id="fullName"
