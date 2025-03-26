@@ -2,6 +2,6 @@
 
 import GameDashboard from '@/components/game/GameDashboard';
 
-export default function Home() {
+export default function GamePage() {
   return <GameDashboard />;
-}
+} 
