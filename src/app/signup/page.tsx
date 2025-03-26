@@ -20,7 +20,7 @@ export default function SignupPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
-    username: '',
+    fullName: '',
     password: '',
     confirmPassword: '',
     role: '',
@@ -41,13 +41,30 @@ export default function SignupPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Signup attempt with:', formData);
-    router.push('/login');
-    // In a real app, you would handle user registration here
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
 
-  };
+
+    const { confirmPassword, ...parsedFormData } = formData
+
+    const res = await fetch('/api/signup', {
+      method: 'POST',
+      body: JSON.stringify(parsedFormData),
+      headers: { 'Content-Type': 'application/json' },
+    })
+
+    const data = await res.json()
+    if (!res.ok) {
+      // Handle error
+      console.error(data.error)
+    } else {
+      // Handle success
+      console.log(data.message)
+      router.push('/login');
+    }
+  }
+
+
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-gray-900 p-4">
@@ -88,21 +105,22 @@ export default function SignupPage() {
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
-                <label htmlFor="username" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Username
+                <label htmlFor="fullName" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Email
                 </label>
                 <Input
-                  id="username"
-                  name="username"
-                  type="text"
-                  placeholder="johndoe"
-                  value={formData.username}
+                  id="fullName"
+                  name="fullName"
+                  type="fullName"
+                  placeholder="John Doe"
+                  value={formData.fullName}
                   onChange={handleChange}
                   required
                 />
               </div>
+              
               
               <div className="space-y-2">
                 <label htmlFor="role" className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -113,10 +131,10 @@ export default function SignupPage() {
                     <SelectValue placeholder="Select your role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="player">Player</SelectItem>
-                    <SelectItem value="coach">Coach</SelectItem>
-                    <SelectItem value="parent">Parent</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="PLAYER">Player</SelectItem>
+                    <SelectItem value="COACH">Coach</SelectItem>
+                    <SelectItem value="PARENT">Parent</SelectItem>
+                    <SelectItem value="ADMIN">Admin</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

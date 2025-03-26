@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+// import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
@@ -23,11 +24,43 @@ export default function LoginPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Login attempt with:', formData);
-    router.push('/dashboard')
-    // In a real app, you would handle authentication here
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    })
+
+    const data = await res.json()
+    if (!res.ok) {
+      // Handle error
+      console.error(data.error)
+    } else {
+      // Handle success
+      console.log(data.message)
+      // NEED TO STORE/REDIRECT SESSION INFO
+      /*
+      switch (data.user.role) {
+        case 'COACH':
+          router.push('/dashboard/coach')
+          break
+        case 'PLAYER':
+          router.push('/dashboard/player')
+          break
+        case 'PARENT':
+          router.push('/dashboard/parent')
+          break
+        case 'ADMIN':
+          router.push('/dashboard/admin')
+          break
+        default:
+          router.push('/dashboard')
+      }
+          */
+    }
   };
 
   return (

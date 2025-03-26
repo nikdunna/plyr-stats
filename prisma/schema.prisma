@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  COACH
+  PARENT
+  PLAYER
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model User {
+  id           String   @id @default(uuid())
+  fullName     String   @db.VarChar(100)
+  email        String   @unique @db.VarChar(255)
+  passwordHash String
+  role         Role     @default(PLAYER)
+  createdAt    DateTime @default(now())
+
+  teamPlayers TeamPlayers[]
+  team        Team[]
+
+  // As parent
+  children parentPlayer[] @relation("ParentToChild")
+
+  // As player
+  parents     parentPlayer[] @relation("ChildToParent")
+  playerStats PlayerStats[]
+}
+
+model parentPlayer {
+  parentId String
+  playerId String
+
+  parent User @relation("ParentToChild", fields: [parentId], references: [id])
+  player User @relation("ChildToParent", fields: [playerId], references: [id])
+
+  @@id([parentId, playerId])
+}
+
+model Set {
+  id           String        @id @default(uuid())
+  gameId       String
+  setNumber    Int           @default(1)
+  teamScore    Int           @default(0)
+  opponentScore Int           @default(0)
+  playerStats  PlayerStats[]
+  game         Game          @relation(fields: [gameId], references: [id])
+}
+
+model Game {
+  id             String      @id @default(uuid())
+  tournamentId   String?
+  teamId         String?
+  opponentTeamId String?
+  gameDate       DateTime?
+  location       String?     @db.VarChar(255)
+  createdAt      DateTime    @default(now())
+  sets           Set[]
+  tournament     Tournament? @relation(fields: [tournamentId], references: [id])
+  Team           Team?       @relation(fields: [teamId], references: [id])
+}
+
+model PlayerStats {
+  id             String   @id @default(uuid())
+  playerId       String
+  setId          String
+  hitAttempts    Int?     @default(0)
+  kills          Int?     @default(0)
+  assists        Int?     @default(0)
+  assistAttempts Int?     @default(0)
+  threePass      Int?     @default(0)
+  twoPass        Int?     @default(0)
+  onePass        Int?     @default(0)
+  zeroPass       Int?     @default(0)
+  digs           Int?     @default(0)
+  shankedDigs    Int?     @default(0)
+  serves         Int?     @default(0)
+  aces           Int?     @default(0)
+  killBlocks     Int?     @default(0)
+  blockTouches   Int?     @default(0)
+  serviceErrors  Int?     @default(0)
+  hittingErrors  Int?     @default(0)
+  blockingErrors Int?     @default(0)
+  createdAt      DateTime @default(now())
+
+  set            Set      @relation(fields: [setId], references: [id], onDelete: Cascade)
+  player         User     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model TeamPlayers {
+  teamId   String
+  playerId String
+
+  team   Team @relation(fields: [teamId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  player User @relation(fields: [playerId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([teamId, playerId]) // composite primary key
+}
+
+model Team {
+  id        String   @id @default(uuid())
+  name      String   @db.VarChar(100)
+  coachId   String
+  createdAt DateTime @default(now())
+
+  coach User @relation(fields: [coachId], references: [id])
+
+  teamPlayers     TeamPlayers[]
+  tournamentTeams TournamentTeams[]
+  game            Game[]
+}
+
+model TournamentTeams {
+  tournamentId String
+  teamId       String
+  team         Team       @relation(fields: [teamId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([tournamentId, teamId])
+}
+
+model Tournament {
+  id              String            @id @default(uuid())
+  name            String            @db.VarChar(255)
+  location        String?           @db.VarChar(255)
+  startDate       DateTime?         @default(now())
+  endDate         DateTime?
+  createdAt       DateTime          @default(now())
+  game            Game[]
+  tournamentTeams TournamentTeams[]
+}
