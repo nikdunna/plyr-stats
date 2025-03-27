@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
+import { useRouter } from 'next/navigation';
 export default function SignupPage() {
 
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function SignupPage() {
     confirmPassword: '',
     role: '',
   });
-
+  const router = useRouter()
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
