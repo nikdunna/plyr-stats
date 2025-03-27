@@ -4,11 +4,13 @@ import { Suspense } from "react";
 import ParallaxEffect from "@/components/ParallaxEffect";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Navbar from "@/components/Navbar";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-[family-name:var(--font-geist-sans)]">
       {/* Hero Section */}
+      <Navbar />
       <section className="relative h-screen flex items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-blue-50/90 to-white dark:from-gray-800/90 dark:to-gray-900 z-10"></div>

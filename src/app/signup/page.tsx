@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
+import { useRouter } from 'next/navigation';
 export default function SignupPage() {
   const [formData, setFormData] = useState({
     email: '',
@@ -22,7 +22,7 @@ export default function SignupPage() {
     confirmPassword: '',
     role: '',
   });
-
+  const router = useRouter()
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -41,8 +41,10 @@ export default function SignupPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Signup attempt with:', formData);
-    // In a real app, you would handle user registration here
-
+    //whoever does authentication stuff should put code here, for now im just creating a dummy localstorage variable to dynamically render
+    //navbar since (i don't think) authenticated users should have a navbar since they would have the sidebar (whenever it is created)
+    router.push("/profile");
+    localStorage.setItem("loggedIn", "true");
   };
 
   return (
