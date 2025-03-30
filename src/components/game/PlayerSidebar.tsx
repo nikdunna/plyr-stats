@@ -12,8 +12,8 @@ interface PlayerSidebarProps {
 export default function PlayerSidebar({ isOpen, players, onClose }: PlayerSidebarProps) {
   return (
     <div 
-      className={`fixed left-0 top-0 h-full w-80 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out border-r border-gray-200 dark:border-gray-700 ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
+      className={`fixed right-0 top-0 h-full w-80 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out border-l border-gray-200 dark:border-gray-700 ${
+        isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
       <div className="p-6">
