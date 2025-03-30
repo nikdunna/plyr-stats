@@ -7,6 +7,9 @@ declare module 'next-auth' {
       email: string
       role: 'COACH' | 'PLAYER' | 'PARENT' | 'ADMIN'
       fullName: string
+      position?: string
+      height?: number
+      jerseyNumber?: number
     }
   }
 
@@ -15,6 +18,9 @@ declare module 'next-auth' {
     email: string
     role: 'COACH' | 'PLAYER' | 'PARENT' | 'ADMIN'
     fullName: string
+    position?: string
+    height?: number
+    jerseyNumber?: number
   }
 }
 
@@ -24,5 +30,8 @@ declare module 'next-auth/jwt' {
     email: string
     role: Role
     fullName: string
+    position?: string
+    height?: number
+    jerseyNumber?: number
   }
 }
