@@ -64,7 +64,7 @@ model Game {
   id             String      @id @default(uuid())
   tournamentId   String?
   teamId         String?
-  opponentTeamId String?
+  opponentTeam   String?
   gameDate       DateTime?
   label          String?     @db.VarChar(255)
   location       String?     @db.VarChar(255)
