@@ -39,6 +39,9 @@ export const authOptions = {
           email: user.email,
           role: user.role,
           fullName: user.fullName,
+          position: user.position || undefined,
+          height: user.height || undefined,
+          jerseyNumber: user.jerseyNumber || undefined,
         };
       },
     }),
@@ -50,6 +53,9 @@ export const authOptions = {
         token.email = user.email;
         token.role = user.role;
         token.fullName = user.fullName;
+        token.position = user.position;
+        token.height = user.height;
+        token.jerseyNumber = user.jerseyNumber;
       }
       return token;
     },
@@ -58,6 +64,9 @@ export const authOptions = {
       session.user.role = token.role;
       session.user.email = token.email;
       session.user.fullName = token.fullName;
+      session.user.position = token.position;
+      session.user.height = token.height;
+      session.user.jerseyNumber = token.jerseyNumber;
       return session;
     },
   },
