@@ -9,6 +9,7 @@ import ActivityFeed from './ActivityFeed';
 import ScoreDisplay from './ScoreDisplay';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useRouter } from 'next/navigation';
 
 
 interface GameDashboardProps {
@@ -96,6 +97,7 @@ const initialBenchPlayers: Player[] = [
 ];
 
 export default function GameDashboard({ initialGame }: GameDashboardProps) {
+  const router = useRouter();
   const defaultGame: Game = {
     id: crypto.randomUUID(),
     date: new Date().toISOString(),
@@ -331,18 +333,8 @@ export default function GameDashboard({ initialGame }: GameDashboardProps) {
     // Log the complete game for saving
     console.log('Game Over - Final Game State:', finalGame);
 
-    // Reset the game state
-    setGame({
-      id: crypto.randomUUID(),
-      date: new Date().toISOString(),
-      sets: [],
-      currentSet: 1,
-      players: mockPlayers,
-      actions: [],
-    });
-    setCurrentHomeScore(0);
-    setCurrentOpponentScore(0);
-    setConfirmingGameOver(false);
+    // Navigate back to dashboard
+    router.push('/dashboard');
   };
 
   const handleEndSet = () => {

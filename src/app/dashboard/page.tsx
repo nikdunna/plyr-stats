@@ -125,21 +125,29 @@ export default function Dashboard() {
               Welcome back, {session.user.fullName}
             </p>
           </div>
-          {session.user.role === "COACH" && (
-            <Select value={selectedPlayer} onValueChange={setSelectedPlayer}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Select player" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="team">Team Stats</SelectItem>
-                {players.map((player) => (
-                  <SelectItem key={player.id} value={player.id}>
-                    {player.fullName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+          <div className="flex items-center gap-4">
+            {session.user.role === "COACH" && (
+              <Select value={selectedPlayer} onValueChange={setSelectedPlayer}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Select player" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="team">Team Stats</SelectItem>
+                  {players.map((player) => (
+                    <SelectItem key={player.id} value={player.id}>
+                      {player.fullName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <a
+              href="/game"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Start New Game
+            </a>
+          </div>
         </div>
 
         {/* Stats Grid */}
