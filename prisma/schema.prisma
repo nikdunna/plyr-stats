@@ -103,7 +103,7 @@ model Team {
   name            String            @db.VarChar(100)
   coachId         String
   createdAt       DateTime          @default(now())
-  teamCode        String            @unique @db.VarChar(10)
+  teamCode        String            @unique
   game            Game[]
   coach           User              @relation(fields: [coachId], references: [id])
   teamPlayers     TeamPlayers[]

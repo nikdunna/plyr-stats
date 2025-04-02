@@ -1,9 +1,16 @@
-'use client';
+"use client";
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -12,6 +19,7 @@ export default function CreateTeamPage() {
   const router = useRouter();
   const [teamName, setTeamName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [generatedTeamCode, setGeneratedTeamCode] = useState("");
 
   useEffect(() => {
     // Check if user is a coach
@@ -25,18 +33,26 @@ export default function CreateTeamPage() {
     setIsLoading(true);
 
     try {
-      // Create team object with the current coach's ID
-      const teamObject = {
-        name: teamName,
-        coachId: session?.user?.id,
-        teamCode: Math.random().toString(36).substring(2, 8).toUpperCase(), // Generate a random 6-character code
-      };
-      
-      // Log the team object to the console
-      console.log("Team object to be created:", teamObject);
-      
-    } catch (error) {
-      console.error("Error creating team:", error);
+      const res = await fetch("/api/team", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: teamName,
+          coachId: session?.user?.id,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error("Error:", data.error);
+      } else {
+        setGeneratedTeamCode(data.teamCode);
+        console.log("✅ Team created:", data.team);
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      console.error("❌ Error creating team:", err);
     } finally {
       setIsLoading(false);
     }
@@ -48,44 +64,69 @@ export default function CreateTeamPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Create Your Team</CardTitle>
-          <CardDescription>
-            Set up your volleyball team to start tracking player statistics
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
+      {generatedTeamCode ? ( // If team is created, show the team code card
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Create Your Team</CardTitle>
+            <CardDescription>
+              Your team has been created, welcome to PlyrStats!
+            </CardDescription>
+          </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label
-                  htmlFor="teamName"
-                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  Team Name
-                </label>
-                <Input
-                  id="teamName"
-                  value={teamName}
-                  onChange={(e) => setTeamName(e.target.value)}
-                  placeholder="Enter your team name"
-                  required
-                />
-              </div>
-            </div>
+            <p>
+              Your team code is:{" "}
+              <span className="font-bold text-indigo-500">
+                {generatedTeamCode}
+              </span>
+            </p>
           </CardContent>
           <CardFooter>
             <Button
-              type="submit"
+              type="button"
               className="w-full"
               disabled={isLoading}
+              onClick={() => router.push("/dashboard")}
             >
-              {isLoading ? "Creating..." : "Create Team"}
+              Go to Dashboard
             </Button>
           </CardFooter>
-        </form>
-      </Card>
+        </Card>
+      ) : (
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Create Your Team</CardTitle>
+            <CardDescription>
+              Set up your volleyball team to start tracking player statistics
+            </CardDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="teamName"
+                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    Team Name
+                  </label>
+                  <Input
+                    id="teamName"
+                    value={teamName}
+                    onChange={(e) => setTeamName(e.target.value)}
+                    placeholder="Enter your team name"
+                    required
+                  />
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Creating..." : "Create Team"}
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      )}
     </div>
   );
-} 
+}
