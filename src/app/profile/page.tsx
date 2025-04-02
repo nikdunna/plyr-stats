@@ -13,17 +13,11 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import Link from "next/link";
 
 export default function ProfilePage() {
   const { data: session } = useSession();
+  console.log("Session data:", session);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [passwordForm, setPasswordForm] = useState({
@@ -83,7 +77,11 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
         <p className="text-gray-900 dark:text-white">
-          Please <Link className="text-blue-500" href="/login">sign in</Link> to view your profile.
+          Please{" "}
+          <Link className="text-blue-500" href="/login">
+            sign in
+          </Link>{" "}
+          to view your profile.
         </p>
       </div>
     );
@@ -163,6 +161,16 @@ export default function ProfilePage() {
                   </label>
                   <p className="mt-1 text-gray-900 dark:text-white">
                     {convertHeightToFeetAndInches(session.user.height)}
+                  </p>
+                </div>
+              )}
+              {session.user.playerCode && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Player Code
+                  </label>
+                  <p className="mt-1 text-gray-900 dark:text-white">
+                    {session.user.playerCode}
                   </p>
                 </div>
               )}

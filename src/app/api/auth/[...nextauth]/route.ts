@@ -24,6 +24,17 @@ export const authOptions = {
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            fullName: true,
+            position: true,
+            height: true,
+            jerseyNumber: true,
+            playerCode: true,
+            passwordHash: true,
+          },
         });
 
         if (!user) return null;
@@ -42,6 +53,7 @@ export const authOptions = {
           position: user.position || undefined,
           height: user.height || undefined,
           jerseyNumber: user.jerseyNumber || undefined,
+          playerCode: user.playerCode || undefined,
         };
       },
     }),
@@ -56,6 +68,7 @@ export const authOptions = {
         token.position = user.position;
         token.height = user.height;
         token.jerseyNumber = user.jerseyNumber;
+        token.playerCode = user.playerCode;
       }
       return token;
     },
@@ -67,6 +80,7 @@ export const authOptions = {
       session.user.position = token.position;
       session.user.height = token.height;
       session.user.jerseyNumber = token.jerseyNumber;
+      session.user.playerCode = token.playerCode;
       return session;
     },
   },
