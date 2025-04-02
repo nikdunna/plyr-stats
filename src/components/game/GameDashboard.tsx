@@ -14,6 +14,11 @@ import { useRouter } from 'next/navigation';
 
 interface GameDashboardProps {
   initialGame?: Game;
+  initialGameData?: {
+    gameModel: any;
+    players: Player[];
+    benchPlayers: Player[];
+  };
 }
 
 interface PlayerWithStats extends Player {
@@ -96,7 +101,7 @@ const initialBenchPlayers: Player[] = [
   },
 ];
 
-export default function GameDashboard({ initialGame }: GameDashboardProps) {
+export default function GameDashboard({ initialGame, initialGameData }: GameDashboardProps) {
   const router = useRouter();
   const defaultGame: Game = {
     id: crypto.randomUUID(),
@@ -108,7 +113,7 @@ export default function GameDashboard({ initialGame }: GameDashboardProps) {
   };
 
   const [game, setGame] = useState<Game>(initialGame || defaultGame);
-  const [benchPlayers, setBenchPlayers] = useState<Player[]>(initialBenchPlayers);
+  const [benchPlayers, setBenchPlayers] = useState<Player[]>(initialGameData?.benchPlayers || initialBenchPlayers);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isOpponentServing, setIsOpponentServing] = useState(false);
   const [lastRotatedScore, setLastRotatedScore] = useState<number | null>(null);
@@ -124,6 +129,14 @@ export default function GameDashboard({ initialGame }: GameDashboardProps) {
   const [liberoPosition, setLiberoPosition] = useState<number | null>(null);
   const [activeLibero, setActiveLibero] = useState<Player | null>(null);
   const [feed, setFeed] = useState<FeedAction[]>([]);
+
+  // Log the initial data when component mounts
+  useEffect(() => {
+    console.log('Initial Game Data:', initialGameData);
+    console.log('Game Model:', initialGameData?.gameModel);
+    console.log('Starting Players:', initialGameData?.players);
+    console.log('Bench Players:', initialGameData?.benchPlayers);
+  }, [initialGameData]);
 
   // Initialize the active Libero when the component mounts
   useEffect(() => {

@@ -8,44 +8,32 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-enum Role {
-  ADMIN
-  COACH
-  PARENT
-  PLAYER
-}
-
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model User {
-  id           String   @id @default(uuid())
-  fullName     String   @db.VarChar(100)
-  email        String   @unique @db.VarChar(255)
+  id           String         @id @default(uuid())
+  fullName     String         @db.VarChar(100)
+  email        String         @unique @db.VarChar(255)
   passwordHash String
-  avatarUrl     String?  @db.VarChar(500)
-  role         Role     @default(PLAYER)
-  createdAt    DateTime @default(now())
-
-  teamPlayers  TeamPlayers[]
+  role         Role           @default(PLAYER)
+  createdAt    DateTime       @default(now())
+  frequency    Int?           @default(0)
+  position     String?        @db.VarChar(50)
+  jerseyNumber Int?           @default(-1)
+  height       Int?           @default(0)
+  avatarUrl    String?        @db.VarChar(500)
+  playerCode   String?        @unique
+  playerStats  PlayerStats[]
   team         Team[]
-  frequency    Int?          @default(0)
-  position     String?       @db.VarChar(50)
-  jerseyNumber Int?          @default(-1) // -1 means not assigned
-  height       Int?          @default(0) // in inches
-
-  // As parent
-  children parentPlayer[] @relation("ParentToChild")
-
-  // As player
-  parents     parentPlayer[] @relation("ChildToParent")
-  playerStats PlayerStats[]
+  teamPlayers  TeamPlayers[]
+  children     parentPlayer[] @relation("ParentToChild")
+  parents      parentPlayer[] @relation("ChildToParent")
 }
 
 model parentPlayer {
   parentId String
   playerId String
-
-  parent User @relation("ParentToChild", fields: [parentId], references: [id])
-  player User @relation("ChildToParent", fields: [playerId], references: [id])
+  parent   User   @relation("ParentToChild", fields: [parentId], references: [id])
+  player   User   @relation("ChildToParent", fields: [playerId], references: [id])
 
   @@id([parentId, playerId])
 }
@@ -61,17 +49,17 @@ model Set {
 }
 
 model Game {
-  id             String      @id @default(uuid())
-  tournamentId   String?
-  teamId         String?
-  opponentTeam   String?
-  gameDate       DateTime?
-  label          String?     @db.VarChar(255)
-  location       String?     @db.VarChar(255)
-  createdAt      DateTime    @default(now())
-  sets           Set[]
-  tournament     Tournament? @relation(fields: [tournamentId], references: [id])
-  Team           Team?       @relation(fields: [teamId], references: [id])
+  id           String      @id @default(uuid())
+  tournamentId String?
+  teamId       String?
+  gameDate     DateTime?
+  label        String?     @db.VarChar(255)
+  location     String?     @db.VarChar(255)
+  createdAt    DateTime    @default(now())
+  opponentTeam String?
+  Team         Team?       @relation(fields: [teamId], references: [id])
+  tournament   Tournament? @relation(fields: [tournamentId], references: [id])
+  sets         Set[]
 }
 
 model PlayerStats {
@@ -97,33 +85,29 @@ model PlayerStats {
   diggingErrors  Int?     @default(0)
   assistErrors   Int?     @default(0)
   createdAt      DateTime @default(now())
-
-  set    Set  @relation(fields: [setId], references: [id], onDelete: Cascade)
-  player User @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  player         User     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  set            Set      @relation(fields: [setId], references: [id], onDelete: Cascade)
 }
 
 model TeamPlayers {
   teamId   String
   playerId String
+  player   User   @relation(fields: [playerId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  team     Team   @relation(fields: [teamId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  team   Team @relation(fields: [teamId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  player User @relation(fields: [playerId], references: [id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@id([teamId, playerId]) // composite primary key
+  @@id([teamId, playerId])
 }
 
 model Team {
-  id        String   @id @default(uuid())
-  name      String   @db.VarChar(100)
-  coachId   String
-  createdAt DateTime @default(now())
-  teamCode  String   @unique @db.VarChar(10)
-
-  coach User @relation(fields: [coachId], references: [id])
-
+  id              String            @id @default(uuid())
+  name            String            @db.VarChar(100)
+  coachId         String
+  createdAt       DateTime          @default(now())
+  teamCode        String            @unique @db.VarChar(10)
+  game            Game[]
+  coach           User              @relation(fields: [coachId], references: [id])
   teamPlayers     TeamPlayers[]
   tournamentTeams TournamentTeams[]
-  game            Game[]
 }
 
 model TournamentTeams {
@@ -144,4 +128,11 @@ model Tournament {
   createdAt       DateTime          @default(now())
   game            Game[]
   tournamentTeams TournamentTeams[]
+}
+
+enum Role {
+  ADMIN
+  COACH
+  PARENT
+  PLAYER
 }
