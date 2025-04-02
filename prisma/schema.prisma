@@ -24,6 +24,7 @@ model User {
   avatarUrl     String?  @db.VarChar(500)
   role         Role     @default(PLAYER)
   createdAt    DateTime @default(now())
+  playerCode   String?  @unique
 
   teamPlayers  TeamPlayers[]
   team         Team[]
