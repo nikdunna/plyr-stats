@@ -11,6 +11,7 @@ declare module 'next-auth' {
       height?: number
       jerseyNumber?: number
       playerCode?: string
+      teamCode?: string
     }
   }
 
@@ -23,6 +24,7 @@ declare module 'next-auth' {
     height?: number
     jerseyNumber?: number
     playerCode?: string
+    teamCode?: string
   }
 }
 
@@ -36,5 +38,6 @@ declare module 'next-auth/jwt' {
     height?: number
     jerseyNumber?: number
     playerCode?: string
+    teamCode?: string
   }
 }

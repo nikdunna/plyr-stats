@@ -49,7 +49,6 @@ export default function CreateTeamPage() {
       } else {
         setGeneratedTeamCode(data.teamCode);
         console.log("✅ Team created:", data.team);
-        router.push("/dashboard");
       }
     } catch (err) {
       console.error("❌ Error creating team:", err);
@@ -78,6 +77,11 @@ export default function CreateTeamPage() {
               <span className="font-bold text-indigo-500">
                 {generatedTeamCode}
               </span>
+              <br />
+              <br />
+              <p className="text-sm text-gray-500">
+                Share this code with your players to get started. You can view this code at anytime in your profile.
+              </p>
             </p>
           </CardContent>
           <CardFooter>

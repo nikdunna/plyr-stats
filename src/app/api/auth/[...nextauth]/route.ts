@@ -69,6 +69,17 @@ export const authOptions = {
         token.height = user.height;
         token.jerseyNumber = user.jerseyNumber;
         token.playerCode = user.playerCode;
+
+        // If the user is a coach, pull their teamCode from DB
+        if (user.role === "COACH") {
+          const coachTeam = await prisma.team.findFirst({
+            where: { coachId: user.id },
+          });
+
+          if (coachTeam) {
+            token.teamCode = coachTeam.teamCode;
+          }
+        }
       }
       return token;
     },
@@ -81,6 +92,9 @@ export const authOptions = {
       session.user.height = token.height;
       session.user.jerseyNumber = token.jerseyNumber;
       session.user.playerCode = token.playerCode;
+      if (token.teamCode) {
+        session.user.teamCode = token.teamCode;
+      }
       return session;
     },
   },

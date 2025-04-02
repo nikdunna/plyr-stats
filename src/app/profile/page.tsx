@@ -134,7 +134,7 @@ export default function ProfilePage() {
                   {session.user.email}
                 </p>
               </div>
-              {session.user.jerseyNumber && (
+              {session.user.jerseyNumber !== -1 && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Jersey Number
@@ -171,6 +171,16 @@ export default function ProfilePage() {
                   </label>
                   <p className="mt-1 text-gray-900 dark:text-white">
                     {session.user.playerCode}
+                  </p>
+                </div>
+              )}
+              {session.user.role === "COACH" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Team Code
+                  </label>
+                  <p className="mt-1 text-gray-900 dark:text-white">
+                    {session.user.teamCode}
                   </p>
                 </div>
               )}
