@@ -119,7 +119,7 @@ export default function LineupSetup() {
   const handleContinue = () => {
     // Create the starting lineup array in the format expected by GameDashboard
     const startingLineup = courtPositions
-      .filter((pos) => pos.player)
+      .filter((pos) => pos.player && pos.id !== "position-7") // Exclude libero
       .map((pos) => ({
         id: pos.player!.id,
         name: pos.player!.fullName,
@@ -127,15 +127,32 @@ export default function LineupSetup() {
         position: pos.player!.position || "Unknown",
       }));
 
+    // Get the libero player specifically from position-7
+    const liberoPosition = courtPositions.find(pos => pos.id === "position-7");
+    const chosenLibero = liberoPosition?.player;
+
     // Create the bench players array with remaining players
-    const benchPlayers = players
-      .filter((player) => !courtPositions.some((pos) => pos.player?.id === player.id))
-      .map((player) => ({
-        id: player.id,
-        name: player.fullName,
-        imageUrl: player.imageUrl || "/images/players/placeholder.jpeg",
-        position: player.position || "Unknown",
-      }));
+    const benchPlayers = [
+      // Add chosen libero at index 0 if they exist
+      ...(chosenLibero ? [{
+        id: chosenLibero.id,
+        name: chosenLibero.fullName,
+        imageUrl: chosenLibero.imageUrl || "/images/players/placeholder.jpeg",
+        position: chosenLibero.position || "Unknown",
+      }] : []),
+      // Add remaining players, excluding the chosen libero
+      ...players
+        .filter((player) => 
+          !courtPositions.some((pos) => pos.player?.id === player.id) && 
+          player.id !== chosenLibero?.id
+        )
+        .map((player) => ({
+          id: player.id,
+          name: player.fullName,
+          imageUrl: player.imageUrl || "/images/players/placeholder.jpeg",
+          position: player.position || "Unknown",
+        }))
+    ];
 
     // Get the game model from localStorage
     const gameModel = JSON.parse(localStorage.getItem('currentGameModel') || 'null');

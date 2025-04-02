@@ -13,8 +13,7 @@ import { useRouter } from 'next/navigation';
 
 
 interface GameDashboardProps {
-  initialGame?: Game;
-  initialGameData?: {
+  initialGameData: {
     gameModel: any;
     players: Player[];
     benchPlayers: Player[];
@@ -33,87 +32,20 @@ interface PlayerWithStats extends Player {
   };
 }
 
-// Mock data for testing
-const mockPlayers: Player[] = [
-  {
-    id: '4',
-    name: 'Player 4',
-    imageUrl: '/images/players/placeholder.jpeg',
-    position: 'Opposite',
-  },
-  {
-    id: '3',
-    name: 'Player 3',
-    imageUrl: '/images/players/placeholder.jpeg',
-    position: 'Middle',
-  },
-  {
-    id: '2',
-    name: 'Player 2',
-    imageUrl: '/images/players/placeholder.jpeg',
-    position: 'Outside',
-  },
-  {
-    id: '5',
-    name: 'Player 5',
-    imageUrl: '/images/players/placeholder.jpeg',
-    position: 'Outside',
-  },
-  {
-    id: '6',
-    name: 'Player 6',
-    imageUrl: '/images/players/placeholder.jpeg',
-    position: 'Middle',
-  },
-  {
-    id: '1',
-    name: 'Player 1',
-    imageUrl: '/images/players/placeholder.jpeg',
-    position: 'Setter',
-  },
-];
-
-// Mock additional players (will come from DB later)
-const initialBenchPlayers: Player[] = [
-  {
-    id: '7',
-    name: 'Sub Player 1',
-    imageUrl: '/images/players/placeholder.jpeg',
-    position: 'Outside',
-  },
-  {
-    id: '8',
-    name: 'Sub Player 2',
-    imageUrl: '/images/players/placeholder.jpeg',
-    position: 'Middle',
-  },
-  {
-    id: '9',
-    name: 'Sub Player 3',
-    imageUrl: '/images/players/placeholder.jpeg',
-    position: 'Setter',
-  },
-  {
-    id: '10',
-    name: 'Libero Player',
-    imageUrl: '/images/players/placeholder.jpeg',
-    position: 'Libero',
-  },
-];
-
-export default function GameDashboard({ initialGame, initialGameData }: GameDashboardProps) {
+export default function GameDashboard({ initialGameData }: GameDashboardProps) {
   const router = useRouter();
-  const defaultGame: Game = {
+  
+  // Initialize game state from initialGameData
+  const [game, setGame] = useState<Game>({
     id: crypto.randomUUID(),
     date: new Date().toISOString(),
     sets: [],
     currentSet: 1,
-    players: mockPlayers,
+    players: initialGameData.players,
     actions: [],
-  };
+  });
 
-  const [game, setGame] = useState<Game>(initialGame || defaultGame);
-  const [benchPlayers, setBenchPlayers] = useState<Player[]>(initialGameData?.benchPlayers || initialBenchPlayers);
+  const [benchPlayers, setBenchPlayers] = useState<Player[]>(initialGameData.benchPlayers);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isOpponentServing, setIsOpponentServing] = useState(false);
   const [lastRotatedScore, setLastRotatedScore] = useState<number | null>(null);
@@ -125,18 +57,11 @@ export default function GameDashboard({ initialGame, initialGameData }: GameDash
   const [isReceiving, setIsReceiving] = useState(false);
   const [homeSetsWon, setHomeSetsWon] = useState(0);
   const [opponentSetsWon, setOpponentSetsWon] = useState(0);
+  const [totalSets, setTotalSets] = useState(3); // Default to 3 sets
   const hasProcessedRotation = useRef(false);
   const [liberoPosition, setLiberoPosition] = useState<number | null>(null);
   const [activeLibero, setActiveLibero] = useState<Player | null>(null);
   const [feed, setFeed] = useState<FeedAction[]>([]);
-
-  // Log the initial data when component mounts
-  useEffect(() => {
-    console.log('Initial Game Data:', initialGameData);
-    console.log('Game Model:', initialGameData?.gameModel);
-    console.log('Starting Players:', initialGameData?.players);
-    console.log('Bench Players:', initialGameData?.benchPlayers);
-  }, [initialGameData]);
 
   // Initialize the active Libero when the component mounts
   useEffect(() => {
@@ -144,7 +69,20 @@ export default function GameDashboard({ initialGame, initialGameData }: GameDash
     if (benchLibero) {
       setActiveLibero(benchLibero);
     }
-  }, []);
+  }, [benchPlayers]);
+
+  // Log the initial data when component mounts
+  useEffect(() => {
+    console.log('Initial Game Data:', initialGameData);
+    console.log('Game Model:', initialGameData.gameModel);
+    console.log('Starting Players:', initialGameData.players);
+    console.log('Bench Players:', initialGameData.benchPlayers);
+    
+    // Set the total number of sets from the game model
+    if (initialGameData.gameModel?.sets?.length) {
+      setTotalSets(initialGameData.gameModel.sets.length);
+    }
+  }, [initialGameData]);
 
   const updateRotation = (increment: boolean) => {
     console.log('Updating rotation:', { currentRotation, increment });
@@ -159,92 +97,111 @@ export default function GameDashboard({ initialGame, initialGameData }: GameDash
     setFeed(prev => [action, ...prev].slice(0, 5)); // Keep only the 5 most recent actions
   };
 
-  const handlePlayerAction = (action: GameAction) => {
-    // Handle scoring based on action properties
-    if (action.homeScore) {
-      handleScore(true, true); // Increment home team score
-      setIsReceiving(false); // Home team is now serving
-    } else if (action.awayScore) {
-      handleScore(false, true); // Increment opponent score
-      setIsReceiving(true); // Home team is now receiving
-    }
+  const handlePlayerAction = async (action: GameAction) => {
+    try {
+      // Handle scoring based on action properties
+      if (action.homeScore) {
+        handleScore(true, true); // Increment home team score
+        setIsReceiving(false); // Home team is now serving
+      } else if (action.awayScore) {
+        handleScore(false, true); // Increment opponent score
+        setIsReceiving(true); // Home team is now receiving
+      }
 
-    // Add to feed
-    const player = game.players.find(p => p.id === action.playerId);
-    addToFeed({
-      type: action.type,
-      timestamp: action.timestamp,
-      playerId: action.playerId,
-      playerName: player?.name,
-      details: `${player?.name} ${action.detail}`,
-      setNumber: action.setNumber,
-    });
-
-    // Update game state with new action
-    setGame(prev => {
-      const updatedPlayers = prev.players.map(player => {
-        if (player.id === action.playerId) {
-          const playerWithStats = player as PlayerWithStats;
-          if (!playerWithStats.stats) {
-            playerWithStats.stats = {
-              spikes: 0,
-              kills: 0,
-              errors: 0,
-              passes: 0,
-              passRating: 0,
-              sets: 0,
-              setErrors: 0,
-            };
-          }
-
-          // Update player stats based on action type
-          switch (action.type) {
-            case 'kill':
-            case 'attack_error':
-              return {
-                ...playerWithStats,
-                stats: {
-                  ...playerWithStats.stats,
-                  spikes: playerWithStats.stats.spikes + 1,
-                  kills: action.type === 'kill' ? playerWithStats.stats.kills + 1 : playerWithStats.stats.kills,
-                  errors: action.type === 'attack_error' ? playerWithStats.stats.errors + 1 : playerWithStats.stats.errors,
-                }
-              };
-            case 'pass_0':
-            case 'pass_1':
-            case 'pass_2':
-            case 'pass_3':
-              return {
-                ...playerWithStats,
-                stats: {
-                  ...playerWithStats.stats,
-                  passes: playerWithStats.stats.passes + 1,
-                  passRating: calculatePassRating(action.type),
-                }
-              };
-            case 'set_error':
-            case 'assist':
-              return {
-                ...playerWithStats,
-                stats: {
-                  ...playerWithStats.stats,
-                  sets: playerWithStats.stats.sets + 1,
-                  setErrors: action.type === 'set_error' ? playerWithStats.stats.setErrors + 1 : playerWithStats.stats.setErrors,
-                }
-              };
-            default:
-              return playerWithStats;
-          }
-        }
-        return player;
+      // Add to feed
+      const player = game.players.find(p => p.id === action.playerId);
+      addToFeed({
+        type: action.type,
+        timestamp: action.timestamp,
+        playerId: action.playerId,
+        playerName: player?.name,
+        details: `${player?.name} ${action.detail}`,
+        setNumber: action.setNumber,
       });
 
-      return {
-        ...prev,
-        players: updatedPlayers,
-        actions: [...prev.actions, action],
+      // Update game state with new action
+      setGame(prev => {
+        const updatedPlayers = prev.players.map(player => {
+          if (player.id === action.playerId) {
+            const playerWithStats = player as PlayerWithStats;
+            if (!playerWithStats.stats) {
+              playerWithStats.stats = {
+                spikes: 0,
+                kills: 0,
+                errors: 0,
+                passes: 0,
+                passRating: 0,
+                sets: 0,
+                setErrors: 0,
+              };
+            }
+
+            // Update player stats based on action type
+            switch (action.type) {
+              case 'kill':
+              case 'attack_error':
+                return {
+                  ...playerWithStats,
+                  stats: {
+                    ...playerWithStats.stats,
+                    spikes: playerWithStats.stats.spikes + 1,
+                    kills: action.type === 'kill' ? playerWithStats.stats.kills + 1 : playerWithStats.stats.kills,
+                    errors: action.type === 'attack_error' ? playerWithStats.stats.errors + 1 : playerWithStats.stats.errors,
+                  }
+                };
+              case 'pass_0':
+              case 'pass_1':
+              case 'pass_2':
+              case 'pass_3':
+                return {
+                  ...playerWithStats,
+                  stats: {
+                    ...playerWithStats.stats,
+                    passes: playerWithStats.stats.passes + 1,
+                    passRating: calculatePassRating(action.type),
+                  }
+                };
+              case 'set_error':
+              case 'assist':
+                return {
+                  ...playerWithStats,
+                  stats: {
+                    ...playerWithStats.stats,
+                    sets: playerWithStats.stats.sets + 1,
+                    setErrors: action.type === 'set_error' ? playerWithStats.stats.setErrors + 1 : playerWithStats.stats.setErrors,
+                  }
+                };
+              default:
+                return playerWithStats;
+            }
+          }
+          return player;
+        });
+
+        return {
+          ...prev,
+          players: updatedPlayers,
+          actions: [...prev.actions, action],
+        };
+      });
+
+      // Save the current game state to localStorage
+      const updatedGameData = {
+        ...initialGameData,
+        gameModel: {
+          ...initialGameData.gameModel,
+          actions: [...game.actions, action],
+          currentScore: {
+            home: currentHomeScore,
+            opponent: currentOpponentScore,
+          },
+        },
       };
-    });
+      localStorage.setItem('currentGameData', JSON.stringify(updatedGameData));
+    } catch (error) {
+      console.error('Error handling player action:', error);
+      // You might want to show an error message to the user here
+    }
   };
 
   const calculatePassRating = (actionType: GameActionType): number => {
@@ -314,84 +271,207 @@ export default function GameDashboard({ initialGame, initialGameData }: GameDash
     });
   };
 
-  const handleGameOver = () => {
+  const handleGameOver = async () => {
     if (!confirmingGameOver) {
       setConfirmingGameOver(true);
       return;
     }
 
-    // Add to feed
-    addToFeed({
-      type: 'game_end',
-      timestamp: new Date(),
-      details: `Game ended with final score ${currentHomeScore}-${currentOpponentScore}`,
-      setNumber: game.currentSet,
-    });
+    try {
+      console.log('Starting game over process...');
+      console.log('Current game state:', {
+        currentSet: game.currentSet,
+        homeScore: currentHomeScore,
+        opponentScore: currentOpponentScore,
+        homeSetsWon,
+        opponentSetsWon,
+      });
 
-    // Save the final set
-    const finalSet: Set = {
-      setNumber: game.currentSet,
-      homeScore: currentHomeScore,
-      opponentScore: currentOpponentScore,
-      playerStats: calculatePlayerStats(game.actions.filter(a => a.setNumber === game.currentSet)),
-      timestamp: new Date().toISOString(),
-    };
+      // Add to feed
+      addToFeed({
+        type: 'game_end',
+        timestamp: new Date(),
+        details: `Game ended with final score ${currentHomeScore}-${currentOpponentScore}`,
+        setNumber: game.currentSet,
+      });
 
-    // Save the complete game
-    const finalGame: Game = {
-      ...game,
-      sets: [...game.sets, finalSet],
-    };
+      // Save the final set
+      const finalSet: Set = {
+        setNumber: game.currentSet,
+        homeScore: currentHomeScore,
+        opponentScore: currentOpponentScore,
+        playerStats: calculatePlayerStats(game.actions.filter(a => a.setNumber === game.currentSet)),
+        timestamp: new Date().toISOString(),
+      };
 
-    // Log the complete game for saving
-    console.log('Game Over - Final Game State:', finalGame);
+      console.log('Final set data:', {
+        setNumber: finalSet.setNumber,
+        homeScore: finalSet.homeScore,
+        opponentScore: finalSet.opponentScore,
+        playerStatsCount: finalSet.playerStats.length,
+      });
 
-    // Navigate back to dashboard
-    router.push('/dashboard');
+      // Prepare the final game data
+      const finalGameData = {
+        id: game.id,
+        teamId: initialGameData.gameModel.teamId,
+        tournamentId: initialGameData.gameModel.tournamentId,
+        gameDate: game.date,
+        label: initialGameData.gameModel.label,
+        location: initialGameData.gameModel.location,
+        opponentTeam: initialGameData.gameModel.opponentTeam,
+        sets: [...game.sets, finalSet].map(set => ({
+          setNumber: set.setNumber,
+          teamScore: set.homeScore,
+          opponentScore: set.opponentScore,
+          timestamp: set.timestamp,
+          playerStats: set.playerStats.map(stat => ({
+            playerId: stat.playerId,
+            stats: {
+              attackAttempts: stat.stats.attackAttempts,
+              kills: stat.stats.kills,
+              setAssists: stat.stats.setAssists,
+              setAttempts: stat.stats.setAttempts,
+              threePasses: stat.stats.threePasses,
+              twoPasses: stat.stats.twoPasses,
+              onePasses: stat.stats.onePasses,
+              zeroPasses: stat.stats.zeroPasses,
+              digs: stat.stats.digs,
+              serveAttempts: stat.stats.serveAttempts,
+              aces: stat.stats.aces,
+              blocks: stat.stats.blocks,
+              blockAttempts: stat.stats.blockAttempts,
+              serveErrors: stat.stats.serveErrors,
+              attackErrors: stat.stats.attackErrors,
+              blockErrors: stat.stats.blockErrors,
+              digErrors: stat.stats.digErrors,
+              setErrors: stat.stats.setErrors,
+            }
+          }))
+        }))
+      };
+
+      console.log('Prepared game data for API:', {
+        id: finalGameData.id,
+        teamId: finalGameData.teamId,
+        tournamentId: finalGameData.tournamentId,
+        setsCount: finalGameData.sets.length,
+        firstSet: finalGameData.sets[0],
+      });
+
+      // Save the game data
+      console.log('Sending request to API...');
+      const response = await fetch('/api/games/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(finalGameData),
+      });
+
+      console.log('API response status:', response.status);
+      const responseData = await response.json();
+      console.log('API response data:', responseData);
+
+      if (!response.ok) {
+        throw new Error(responseData.error || 'Failed to save game data');
+      }
+
+      // Clear the current game data from localStorage
+      localStorage.removeItem('currentGameData');
+
+      // Navigate back to dashboard
+      router.push('/dashboard');
+    } catch (error) {
+      console.error('Error in handleGameOver:', error);
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        });
+      }
+      // You might want to show an error message to the user here
+    }
   };
 
-  const handleEndSet = () => {
+  const handleEndSet = async () => {
     if (!confirmingEndSet) {
       setConfirmingEndSet(true);
       return;
     }
 
-    // Determine which team won the set
-    const homeTeamWon = currentHomeScore > currentOpponentScore;
+    try {
+      // Determine which team won the set
+      const homeTeamWon = currentHomeScore > currentOpponentScore;
 
-    // Update sets won count
-    if (homeTeamWon) {
-      setHomeSetsWon(prev => prev + 1);
-    } else {
-      setOpponentSetsWon(prev => prev + 1);
+      // Update sets won count
+      if (homeTeamWon) {
+        setHomeSetsWon(prev => prev + 1);
+      } else {
+        setOpponentSetsWon(prev => prev + 1);
+      }
+
+      // Add to feed
+      addToFeed({
+        type: 'set_end',
+        timestamp: new Date(),
+        details: `Set ${game.currentSet} ended with score ${currentHomeScore}-${currentOpponentScore} (${homeTeamWon ? 'Home' : 'Opponent'} won)`,
+        setNumber: game.currentSet,
+      });
+
+      // Save current set data
+      const currentSet: Set = {
+        setNumber: game.currentSet,
+        homeScore: currentHomeScore,
+        opponentScore: currentOpponentScore,
+        playerStats: calculatePlayerStats(game.actions.filter(a => a.setNumber === game.currentSet)),
+        timestamp: new Date().toISOString(),
+      };
+
+      // Check if a team has won enough sets to end the game
+      const setsToWin = Math.ceil(totalSets / 2);
+      const newHomeSetsWon = homeTeamWon ? homeSetsWon + 1 : homeSetsWon;
+      const newOpponentSetsWon = homeTeamWon ? opponentSetsWon : opponentSetsWon + 1;
+
+      if (newHomeSetsWon >= setsToWin || newOpponentSetsWon >= setsToWin) {
+        // Game is over, call handleGameOver
+        handleGameOver();
+        return;
+      }
+
+      // Only proceed with starting a new set if we haven't reached the total sets limit
+      if (game.currentSet < totalSets) {
+        // Update game state for new set
+        setGame(prev => ({
+          ...prev,
+          currentSet: prev.currentSet + 1,
+          sets: [...prev.sets, currentSet],
+        }));
+
+        // Reset scores for the new set
+        setCurrentHomeScore(0);
+        setCurrentOpponentScore(0);
+        setConfirmingEndSet(false);
+
+        // Save the current game state to localStorage
+        const updatedGameData = {
+          ...initialGameData,
+          gameModel: {
+            ...initialGameData.gameModel,
+            sets: [...game.sets, currentSet],
+            currentSet: game.currentSet + 1,
+          },
+        };
+        localStorage.setItem('currentGameData', JSON.stringify(updatedGameData));
+      } else {
+        // If we've reached the total sets limit, end the game
+        handleGameOver();
+      }
+    } catch (error) {
+      console.error('Error ending set:', error);
+      // You might want to show an error message to the user here
     }
-
-    // Add to feed
-    addToFeed({
-      type: 'set_end',
-      timestamp: new Date(),
-      details: `Set ${game.currentSet} ended with score ${currentHomeScore}-${currentOpponentScore} (${homeTeamWon ? 'Home' : 'Opponent'} won)`,
-      setNumber: game.currentSet,
-    });
-
-    // Save current set data
-    const currentSet: Set = {
-      setNumber: game.currentSet,
-      homeScore: currentHomeScore,
-      opponentScore: currentOpponentScore,
-      playerStats: calculatePlayerStats(game.actions.filter(a => a.setNumber === game.currentSet)),
-      timestamp: new Date().toISOString(),
-    };
-
-    // Update game state for new set
-    setGame(prev => ({
-      ...prev,
-      currentSet: prev.currentSet + 1,
-      sets: [...prev.sets, currentSet],
-    }));
-    setCurrentHomeScore(0);
-    setCurrentOpponentScore(0);
-    setConfirmingEndSet(false);
   };
 
   // Function to calculate current zone for a player
