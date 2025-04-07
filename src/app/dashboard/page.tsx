@@ -80,15 +80,15 @@ export default function Dashboard() {
       try {
         if (session?.user?.role === "COACH") {
           // Check if coach has a team by trying to fetch stats
-          const statsResponse = await fetch("/api/stats");
-          if (!statsResponse.ok) {
-            if (statsResponse.status === 404) {
+          const teamResponse = await fetch("/api/team");
+          if (!teamResponse.ok) {
+            if (teamResponse.status === 404) {
               // No team found
               setHasTeam(false);
               router.push("/create-team");
               return;
             }
-            throw new Error("Failed to fetch stats");
+            throw new Error("Failed to fetch team");
           }
           setHasTeam(true);
 
@@ -196,7 +196,9 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {isLoading ? "..." : `${currentStats.hittingPercentage.toFixed(1)}%`}
+                {isLoading
+                  ? "..."
+                  : `${currentStats.hittingPercentage.toFixed(1)}%`}
               </div>
             </CardContent>
           </Card>
@@ -208,7 +210,9 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {isLoading ? "..." : `${currentStats.passingPercentage.toFixed(1)}%`}
+                {isLoading
+                  ? "..."
+                  : `${currentStats.passingPercentage.toFixed(1)}%`}
               </div>
             </CardContent>
           </Card>
@@ -220,7 +224,9 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {isLoading ? "..." : `${currentStats.servingEfficiency.toFixed(1)}%`}
+                {isLoading
+                  ? "..."
+                  : `${currentStats.servingEfficiency.toFixed(1)}%`}
               </div>
             </CardContent>
           </Card>
@@ -232,7 +238,9 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {isLoading ? "..." : `${currentStats.blockingEfficiency.toFixed(1)}%`}
+                {isLoading
+                  ? "..."
+                  : `${currentStats.blockingEfficiency.toFixed(1)}%`}
               </div>
             </CardContent>
           </Card>

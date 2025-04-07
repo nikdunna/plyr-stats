@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function CreateTeamPage() {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const router = useRouter();
   const [teamName, setTeamName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -42,13 +42,30 @@ export default function CreateTeamPage() {
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json();      //HAVE TEAM CODE RETURNED HERE AND SET IT IN UPDATE, GET RID OF REFRESH ROUTE CALL BELOW
 
       if (!res.ok) {
         console.error("Error:", data.error);
       } else {
-        setGeneratedTeamCode(data.teamCode);
-        console.log("✅ Team created:", data.team);
+        const response = await fetch("/api/session/refresh", {
+          method: "POST",
+        });
+        const updated = await response.json();
+
+        // Now update your client session manually
+        if (updated.teamCode) {
+          await update({
+            ...session,
+            user: {
+              ...session?.user,
+              teamCode: updated.teamCode, // 🎯 team code pulled from DB
+            },
+          });
+          setGeneratedTeamCode(updated.teamCode);
+          console.log("✅ Team created:", data.team);
+        } else {
+          console.warn("No team code found in refresh");
+        }
       }
     } catch (err) {
       console.error("❌ Error creating team:", err);
@@ -72,7 +89,7 @@ export default function CreateTeamPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p>
+            <h1>
               Your team code is:{" "}
               <span className="font-bold text-indigo-500">
                 {generatedTeamCode}
@@ -80,9 +97,10 @@ export default function CreateTeamPage() {
               <br />
               <br />
               <p className="text-sm text-gray-500">
-                Share this code with your players to get started. You can view this code at anytime in your profile.
+                Share this code with your players to get started. You can view
+                this code at anytime in your profile.
               </p>
-            </p>
+            </h1>
           </CardContent>
           <CardFooter>
             <Button
