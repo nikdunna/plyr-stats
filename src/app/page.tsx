@@ -4,19 +4,17 @@ import { Suspense } from "react";
 import ParallaxEffect from "@/components/ParallaxEffect";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-[family-name:var(--font-geist-sans)]">
       {/* Hero Section */}
-      <Navbar />
       <section className="relative h-screen flex items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-blue-50/90 to-white dark:from-gray-800/90 dark:to-gray-900 z-10"></div>
           <div className="absolute inset-0 bg-[url('/images/backgrounds/volleyball-court.jpg')] bg-cover bg-center opacity-20 dark:opacity-10"></div>
         </div>
-        
+
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 z-10 text-center">
           <div className="flex flex-col items-center justify-center gap-6">
             <div className="relative w-64 h-64 sm:w-80 sm:h-80">
@@ -52,7 +50,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        
+
         <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
           <svg className="w-6 h-6 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
@@ -64,7 +62,7 @@ export default function Home() {
       <section id="features" className="py-20 bg-gray-50 dark:bg-gray-800">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl sm:text-4xl font-bold text-center mb-16">Why Choose PlyrStats?</h2>
-          
+
           <div className="space-y-32">
             {/* Feature 1 */}
             <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">

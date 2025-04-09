@@ -2,8 +2,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
+import SessionWrapper from "@/components/SessionWrapper";
+import LayoutWrapper from "@/components/LayoutWrapper";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getServerSession } from "next-auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,23 +22,21 @@ export const metadata: Metadata = {
   description: "Advanced volleyball analytics for coaches and players",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-gray-900 text-gray-900 dark:text-white`}
       >
-        <div className="flex flex-col min-h-screen">
-          {/* <Navbar /> */}
-          <main className="flex-grow">
-            {children}
-          </main>
-          {/* <Footer /> */}
-        </div>
+        <SessionWrapper session={session}>
+          <LayoutWrapper>{children}</LayoutWrapper>
+        </SessionWrapper>
       </body>
     </html>
   );
