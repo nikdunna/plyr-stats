@@ -59,7 +59,17 @@ export const authOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: User }) {
+    async jwt({
+      token,
+      user,
+      session,
+      trigger,
+    }: {
+      token: JWT;
+      user?: User;
+      session?: Session;
+      trigger?: "signIn" | "signUp" | "update"; // current triggers for Token changes
+    }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
@@ -81,6 +91,11 @@ export const authOptions = {
           }
         }
       }
+      // Handling session updates:
+      if (trigger === "update") {
+        token.teamCode = session?.user.teamCode;
+      }
+
       return token;
     },
     async session({ session, token }: { session: Session; token: JWT }) {

@@ -42,26 +42,15 @@ export default function CreateTeamPage() {
         }),
       });
 
-      const data = await res.json();      //HAVE TEAM CODE RETURNED HERE AND SET IT IN UPDATE, GET RID OF REFRESH ROUTE CALL BELOW
+      const data = await res.json();
 
       if (!res.ok) {
         console.error("Error:", data.error);
       } else {
-        const response = await fetch("/api/session/refresh", {
-          method: "POST",
-        });
-        const updated = await response.json();
-
-        // Now update your client session manually
-        if (updated.teamCode) {
-          await update({
-            ...session,
-            user: {
-              ...session?.user,
-              teamCode: updated.teamCode, // 🎯 team code pulled from DB
-            },
-          });
-          setGeneratedTeamCode(updated.teamCode);
+        // UPDATING CLIENT SESSION WITH TEAM CODE
+        if (data.teamCode) {
+          await update(data.session);
+          setGeneratedTeamCode(data.teamCode);
           console.log("✅ Team created:", data.team);
         } else {
           console.warn("No team code found in refresh");

@@ -63,10 +63,23 @@ export async function POST(req: Request) {
       },
     });
 
+    const session = await getServerSession(authOptions);
+
+    const updatedSession = {
+      ...session,
+      user: {
+        ...session?.user,
+        teamCode: team.teamCode,
+      },
+    };
+    
+    
+
     return NextResponse.json({
       message: "Team created",
       team,
       teamCode: team.teamCode,
+      session: updatedSession,
     });
   } catch (error) {
     console.error("Error creating team:", error);
