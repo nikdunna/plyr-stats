@@ -17,16 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
 
 interface Player {
   id: string;
@@ -78,7 +68,8 @@ export default function Dashboard() {
   useEffect(() => {
     const checkTeamAndFetchData = async () => {
       try {
-        if (session?.user?.role === "COACH") { // TODO: Change this check to team exist, not if stats exist
+        if (session?.user?.role === "COACH") {
+          // TODO: Change this check to team exist, not if stats exist
           // Check if coach has a team by trying to fetch stats
           const teamResponse = await fetch("/api/team");
           if (!teamResponse.ok) {

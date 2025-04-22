@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { nanoid } from "nanoid";
-        
+
 export default function SignupPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
