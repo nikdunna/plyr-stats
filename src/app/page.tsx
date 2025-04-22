@@ -43,9 +43,6 @@ export default function Home() {
                 priority
               />
             </div>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight">
-              <span className="text-blue-600 dark:text-blue-400">Plyr</span>Stats
-            </h1>
             <p className="text-xl sm:text-2xl max-w-2xl text-gray-700 dark:text-gray-300">
               Advanced volleyball analytics for coaches and players
             </p>
