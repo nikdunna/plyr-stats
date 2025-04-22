@@ -17,6 +17,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 interface Player {
   id: string;
@@ -69,12 +80,9 @@ export default function Dashboard() {
     const checkTeamAndFetchData = async () => {
       try {
         if (session?.user?.role === "COACH") {
-          // TODO: Change this check to team exist, not if stats exist
-          // Check if coach has a team by trying to fetch stats
           const teamResponse = await fetch("/api/team");
           if (!teamResponse.ok) {
             if (teamResponse.status === 404) {
-              // No team found
               setHasTeam(false);
               router.push("/create-team");
               return;
@@ -83,7 +91,6 @@ export default function Dashboard() {
           }
           setHasTeam(true);
 
-          // Fetch players if coach has a team
           const playersResponse = await fetch("/api/players");
           if (playersResponse.ok) {
             const playersData = await playersResponse.json();
@@ -91,11 +98,8 @@ export default function Dashboard() {
           }
         }
 
-        // Fetch game stats
         const statsResponse = await fetch(
-          `/api/stats${
-            selectedPlayer !== "team" ? `?playerId=${selectedPlayer}` : ""
-          }`
+          `/api/stats${selectedPlayer !== "team" ? `?playerId=${selectedPlayer}` : ""}`
         );
         if (statsResponse.ok) {
           const statsData = await statsResponse.json();
@@ -103,7 +107,6 @@ export default function Dashboard() {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        // Set default empty stats if there's an error
         setGameStats([]);
       } finally {
         setIsLoading(false);
@@ -118,25 +121,10 @@ export default function Dashboard() {
   if (!session?.user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
-        <p className="text-gray-900 dark:text-white">
-          Please sign in to view the dashboard.
-        </p>
+        <p className="text-gray-900 dark:text-white">Please sign in to view the dashboard.</p>
       </div>
     );
   }
-
-  // Default stats for when there's no data
-  const defaultStats = {
-    hittingPercentage: 0,
-    passingPercentage: 0,
-    servingEfficiency: 0,
-    blockingEfficiency: 0,
-    digs: 0,
-    kills: 0,
-    assists: 0,
-  };
-
-  const currentStats = gameStats[gameStats.length - 1]?.stats || defaultStats;
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 pt-24 pb-8 px-4 sm:px-6 lg:px-8">
@@ -144,15 +132,13 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Dashboard
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
             <p className="text-gray-600 dark:text-gray-400">
               Welcome back, {session.user.fullName}
             </p>
           </div>
           <div className="flex items-center gap-4">
-            {session.user.role === "COACH" && hasTeam && (
+            {session.user.role === "COACH" && (
               <Select value={selectedPlayer} onValueChange={setSelectedPlayer}>
                 <SelectTrigger className="w-[200px]">
                   <SelectValue placeholder="Select player" />
@@ -167,14 +153,9 @@ export default function Dashboard() {
                 </SelectContent>
               </Select>
             )}
-            {hasTeam && (
-              <a
-                href="/game-setup"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Start New Game
-              </a>
-            )}
+            <Button variant="default" onClick={() => router.push("/game-setup")}>
+              Start New Game
+            </Button>
           </div>
         </div>
 
@@ -189,7 +170,10 @@ export default function Dashboard() {
               <div className="text-2xl font-bold">
                 {isLoading
                   ? "..."
-                  : `${currentStats.hittingPercentage.toFixed(1)}%`}
+                  : `${gameStats.length > 0 &&
+                      gameStats[gameStats.length - 1]?.stats.hittingPercentage !== undefined
+                      ? gameStats[gameStats.length - 1].stats.hittingPercentage.toFixed(1)
+                      : "0.0"}%`}
               </div>
             </CardContent>
           </Card>
@@ -203,7 +187,10 @@ export default function Dashboard() {
               <div className="text-2xl font-bold">
                 {isLoading
                   ? "..."
-                  : `${currentStats.passingPercentage.toFixed(1)}%`}
+                  : `${gameStats.length > 0 &&
+                      gameStats[gameStats.length - 1]?.stats.passingPercentage !== undefined
+                      ? gameStats[gameStats.length - 1].stats.passingPercentage.toFixed(1)
+                      : "0.0"}%`}
               </div>
             </CardContent>
           </Card>
@@ -217,7 +204,10 @@ export default function Dashboard() {
               <div className="text-2xl font-bold">
                 {isLoading
                   ? "..."
-                  : `${currentStats.servingEfficiency.toFixed(1)}%`}
+                  : `${gameStats.length > 0 &&
+                      gameStats[gameStats.length - 1]?.stats.servingEfficiency !== undefined
+                      ? gameStats[gameStats.length - 1].stats.servingEfficiency.toFixed(1)
+                      : "0.0"}%`}
               </div>
             </CardContent>
           </Card>
@@ -231,7 +221,10 @@ export default function Dashboard() {
               <div className="text-2xl font-bold">
                 {isLoading
                   ? "..."
-                  : `${currentStats.blockingEfficiency.toFixed(1)}%`}
+                  : `${gameStats.length > 0 &&
+                      gameStats[gameStats.length - 1]?.stats.blockingEfficiency !== undefined
+                      ? gameStats[gameStats.length - 1].stats.blockingEfficiency.toFixed(1)
+                      : "0.0"}%`}
               </div>
             </CardContent>
           </Card>
@@ -245,7 +238,11 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {gameStats.length > 0 ? (
+              {gameStats.length === 0 ? (
+                <div className="col-span-full text-center text-gray-600 dark:text-gray-400">
+                  No games recorded yet
+                </div>
+              ) : (
                 gameStats.map((game) => (
                   <div
                     key={game.gameId}
@@ -269,17 +266,194 @@ export default function Dashboard() {
                           {new Date(game.gameDate).toLocaleDateString()}
                         </p>
                       </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                          {game.sets?.filter((set) => set.homeScore > set.opponentScore).length || 0}{" "}
+                          -{" "}
+                          {game.sets?.filter((set) => set.homeScore < set.opponentScore).length || 0}
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Sets Won</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {game.sets?.map((set) => (
+                        <div
+                          key={set.setNumber}
+                          className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4"
+                        >
+                          <div className="flex justify-between items-center mb-2">
+                            <h4 className="font-medium text-gray-900 dark:text-white">
+                              Set {set.setNumber}
+                            </h4>
+                            <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                              {set.homeScore} - {set.opponentScore}
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">Hitting %:</span>
+                              <span className="ml-2 font-medium text-gray-900 dark:text-white">
+                                {set.stats?.hittingPercentage?.toFixed(1) || "0.0"}%
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">Passing %:</span>
+                              <span className="ml-2 font-medium text-gray-900 dark:text-white">
+                                {set.stats?.passingPercentage?.toFixed(1) || "0.0"}%
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">Serving %:</span>
+                              <span className="ml-2 font-medium text-gray-900 dark:text-white">
+                                {set.stats?.servingEfficiency?.toFixed(1) || "0.0"}%
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">Blocking %:</span>
+                              <span className="ml-2 font-medium text-gray-900 dark:text-white">
+                                {set.stats?.blockingEfficiency?.toFixed(1) || "0.0"}%
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">Kills:</span>
+                              <span className="ml-2 font-medium text-gray-900 dark:text-white">
+                                {set.stats?.kills || 0}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">Digs:</span>
+                              <span className="ml-2 font-medium text-gray-900 dark:text-white">
+                                {set.stats?.digs || 0}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )) || (
+                        <div className="col-span-full text-center text-gray-600 dark:text-gray-400">
+                          No set data available
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
-              ) : (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  No games recorded yet. Start a new game to track statistics.
-                </div>
               )}
             </div>
           </CardContent>
         </Card>
+
+        {/* Charts */}
+        <Tabs defaultValue="hitting" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="hitting">Hitting</TabsTrigger>
+            <TabsTrigger value="passing">Passing</TabsTrigger>
+            <TabsTrigger value="serving">Serving</TabsTrigger>
+            <TabsTrigger value="blocking">Blocking</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="hitting" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Hitting Percentage Trend</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={gameStats}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="label" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line
+                        type="monotone"
+                        dataKey="stats.hittingPercentage"
+                        stroke="#8884d8"
+                        name="Hitting %"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="passing" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Passing Percentage Trend</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={gameStats}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="label" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line
+                        type="monotone"
+                        dataKey="stats.passingPercentage"
+                        stroke="#82ca9d"
+                        name="Passing %"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="serving" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Serving Efficiency Trend</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={gameStats}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="label" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line
+                        type="monotone"
+                        dataKey="stats.servingEfficiency"
+                        stroke="#ffc658"
+                        name="Serving %"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="blocking" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Blocking Efficiency Trend</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={gameStats}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="label" />
+                      <YAxis />
+                      <Tooltip />
+                      <Line
+                        type="monotone"
+                        dataKey="stats.blockingEfficiency"
+                        stroke="#ff7300"
+                        name="Blocking %"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
