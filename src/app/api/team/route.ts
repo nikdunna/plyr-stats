@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { authOptions } from "@/config/auth";
+import { prisma } from "@/config/prisma";
 import { customAlphabet } from "nanoid";
 
 // Helper to generate unique 6-character team codes
@@ -72,8 +72,6 @@ export async function POST(req: Request) {
         teamCode: team.teamCode,
       },
     };
-    
-    
 
     return NextResponse.json({
       message: "Team created",

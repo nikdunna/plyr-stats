@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { authOptions } from "@/config/auth";
+import { prisma } from "@/config/prisma";
 import { Game, Set, PlayerStats } from "@prisma/client";
 
 type GameWithSets = Game & {
@@ -44,12 +44,16 @@ export async function GET(request: Request) {
     const playerId = searchParams.get("playerId");
 
     // If playerId is provided and user is not a coach, verify it's their own stats
-    if (playerId && session.user.role === "PLAYER" && playerId !== session.user.id) {
+    if (
+      playerId &&
+      session.user.role === "PLAYER" &&
+      playerId !== session.user.id
+    ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get all games for the team
-    const games = await prisma.game.findMany({
+    const games = (await prisma.game.findMany({
       where: {
         teamId: team.id,
       },
@@ -65,7 +69,7 @@ export async function GET(request: Request) {
       orderBy: {
         gameDate: "asc",
       },
-    }) as unknown as GameWithSets[];
+    })) as unknown as GameWithSets[];
 
     // Calculate stats for each game
     const gameStats = games.map((game) => {
@@ -79,7 +83,10 @@ export async function GET(request: Request) {
         blockingEfficiency: calculateBlockingEfficiency(allPlayerStats),
         digs: allPlayerStats.reduce((sum, stat) => sum + (stat.digs || 0), 0),
         kills: allPlayerStats.reduce((sum, stat) => sum + (stat.kills || 0), 0),
-        assists: allPlayerStats.reduce((sum, stat) => sum + (stat.assists || 0), 0),
+        assists: allPlayerStats.reduce(
+          (sum, stat) => sum + (stat.assists || 0),
+          0
+        ),
       };
 
       // Calculate stats for each set
@@ -94,9 +101,18 @@ export async function GET(request: Request) {
             passingPercentage: calculatePassingPercentage(setPlayerStats),
             servingEfficiency: calculateServingEfficiency(setPlayerStats),
             blockingEfficiency: calculateBlockingEfficiency(setPlayerStats),
-            digs: setPlayerStats.reduce((sum, stat) => sum + (stat.digs || 0), 0),
-            kills: setPlayerStats.reduce((sum, stat) => sum + (stat.kills || 0), 0),
-            assists: setPlayerStats.reduce((sum, stat) => sum + (stat.assists || 0), 0),
+            digs: setPlayerStats.reduce(
+              (sum, stat) => sum + (stat.digs || 0),
+              0
+            ),
+            kills: setPlayerStats.reduce(
+              (sum, stat) => sum + (stat.kills || 0),
+              0
+            ),
+            assists: setPlayerStats.reduce(
+              (sum, stat) => sum + (stat.assists || 0),
+              0
+            ),
           },
         };
       });
@@ -124,8 +140,14 @@ export async function GET(request: Request) {
 
 function calculateHittingPercentage(stats: any[]) {
   const totalKills = stats.reduce((sum, stat) => sum + (stat.kills || 0), 0);
-  const totalErrors = stats.reduce((sum, stat) => sum + (stat.hittingErrors || 0), 0);
-  const totalAttempts = stats.reduce((sum, stat) => sum + (stat.hitAttempts || 0), 0);
+  const totalErrors = stats.reduce(
+    (sum, stat) => sum + (stat.hittingErrors || 0),
+    0
+  );
+  const totalAttempts = stats.reduce(
+    (sum, stat) => sum + (stat.hitAttempts || 0),
+    0
+  );
 
   if (totalAttempts === 0) return 0;
   return ((totalKills - totalErrors) / totalAttempts) * 100;
@@ -135,7 +157,11 @@ function calculatePassingPercentage(stats: any[]) {
   const threePass = stats.reduce((sum, stat) => sum + (stat.threePass || 0), 0);
   const twoPass = stats.reduce((sum, stat) => sum + (stat.twoPass || 0), 0);
   const onePass = stats.reduce((sum, stat) => sum + (stat.onePass || 0), 0);
-  const totalPasses = threePass + twoPass + onePass + stats.reduce((sum, stat) => sum + (stat.zeroPass || 0), 0);
+  const totalPasses =
+    threePass +
+    twoPass +
+    onePass +
+    stats.reduce((sum, stat) => sum + (stat.zeroPass || 0), 0);
 
   if (totalPasses === 0) return 0;
   return ((threePass * 3 + twoPass * 2 + onePass) / (totalPasses * 3)) * 100;
@@ -143,7 +169,10 @@ function calculatePassingPercentage(stats: any[]) {
 
 function calculateServingEfficiency(stats: any[]) {
   const totalAces = stats.reduce((sum, stat) => sum + (stat.aces || 0), 0);
-  const totalErrors = stats.reduce((sum, stat) => sum + (stat.serviceErrors || 0), 0);
+  const totalErrors = stats.reduce(
+    (sum, stat) => sum + (stat.serviceErrors || 0),
+    0
+  );
   const totalServes = stats.reduce((sum, stat) => sum + (stat.serves || 0), 0);
 
   if (totalServes === 0) return 0;
@@ -151,10 +180,19 @@ function calculateServingEfficiency(stats: any[]) {
 }
 
 function calculateBlockingEfficiency(stats: any[]) {
-  const totalKillBlocks = stats.reduce((sum, stat) => sum + (stat.killBlocks || 0), 0);
-  const totalErrors = stats.reduce((sum, stat) => sum + (stat.blockingErrors || 0), 0);
-  const totalTouches = stats.reduce((sum, stat) => sum + (stat.blockTouches || 0), 0);
+  const totalKillBlocks = stats.reduce(
+    (sum, stat) => sum + (stat.killBlocks || 0),
+    0
+  );
+  const totalErrors = stats.reduce(
+    (sum, stat) => sum + (stat.blockingErrors || 0),
+    0
+  );
+  const totalTouches = stats.reduce(
+    (sum, stat) => sum + (stat.blockTouches || 0),
+    0
+  );
 
   if (totalTouches === 0) return 0;
   return ((totalKillBlocks - totalErrors) / totalTouches) * 100;
-} 
+}
