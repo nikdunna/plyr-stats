@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
-import { prisma } from "@/config/prisma";
+import { prisma } from "@/lib/prisma";
 import { customAlphabet } from "nanoid";
 
 const generatePlayerCode = () => {

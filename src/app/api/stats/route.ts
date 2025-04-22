@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/config/auth";
-import { prisma } from "@/config/prisma";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { Game, Set, PlayerStats } from "@prisma/client";
 
 type GameWithSets = Game & {
