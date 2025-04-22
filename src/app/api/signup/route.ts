@@ -102,9 +102,19 @@ export async function POST(request: Request) {
         jerseyNumber: jerseyNumber ? parseInt(jerseyNumber) : undefined,
         height: height ? parseInt(height) : undefined,
         ...(generatedPlayerCode ? { playerCode: generatedPlayerCode } : {}),
-        ...(teamIdToLink ? { team: { connect: { id: teamIdToLink } } } : {}),
+        // Removed team connection for players to avoid overwriting coachId
       },
     });
+
+    // If role is PLAYER and the team exists, create a TeamPlayers association.
+    if (role === "PLAYER" && teamIdToLink) {
+      await prisma.teamPlayers.create({
+        data: {
+          teamId: teamIdToLink,
+          playerId: user.id,
+        },
+      });
+    }
 
     // If role is PARENT, create parent-player relationship
     if (role === "PARENT" && playerIdToLink) {
