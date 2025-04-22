@@ -176,7 +176,7 @@ function calculateServingEfficiency(stats: any[]) {
   const totalServes = stats.reduce((sum, stat) => sum + (stat.serves || 0), 0);
 
   if (totalServes === 0) return 0;
-  return ((totalAces - totalErrors) / totalServes) * 100;
+  return ((totalAces + totalServes - totalErrors) / (totalServes + totalAces)) * 100;
 }
 
 function calculateBlockingEfficiency(stats: any[]) {

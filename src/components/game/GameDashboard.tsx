@@ -87,11 +87,11 @@ export default function GameDashboard({ initialGameData }: GameDashboardProps) {
   const updateRotation = (increment: boolean) => {
     console.log('Updating rotation:', { currentRotation, increment });
     setCurrentRotation(prev => {
-      const newRotation = increment ? prev + 1 : prev - 1;
+      const newRotation = increment ? prev - 1 : prev + 1;
       console.log('New rotation will be:', newRotation);
-      return increment ? (newRotation > 6 ? 1 : newRotation) : (newRotation < 1 ? 6 : newRotation);
+      return increment ? (newRotation < 1 ? 6 : newRotation) : (newRotation > 6 ? 1 : newRotation);
     });
-  };
+};
 
   const addToFeed = (action: FeedAction) => {
     setFeed(prev => [action, ...prev].slice(0, 5)); // Keep only the 5 most recent actions
