@@ -1,0 +1,12 @@
+This will be a list of the currently installed shadcn components
+
+- Button
+- Card
+- Input
+    - This is used for small text Input
+- TextArea
+    - This is used for large text Input
+- SideBar
+- Select
+    - This is used for dropdowns
+
